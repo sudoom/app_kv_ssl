@@ -59,13 +59,13 @@
         "keysPermissions": {
             "type": "array",
             "defaultValue": [
-                "list"
+                "all"
             ]
         },
         "secretsPermissions": {
             "type": "array",
             "defaultValue": [
-                "list"
+                "all"
             ]
         },
         "skuName": {
@@ -177,7 +177,7 @@
             }
         },
         {
-            "apiVersion": "2018-05-01-preview",
+            "apiVersion": "2020-02-02-preview",
             "name": "[variables('appInsight')]",
             "type": "microsoft.insights/components",
             "location": "[parameters('location')]",
@@ -213,8 +213,8 @@
                         "tenantId": "[parameters('tenantId')]",
                         "objectId": "f873cf76-4906-49cc-95ab-dd61a616bb08",
                         "permissions": {
-                            "keys": [ "all" ],
-                            "secrets": [ "all" ]
+                            "keys": "[parameters('keysPermissions')]",
+                            "secrets": "[parameters('secretsPermissions')]"
                         }
                     }
                 ],
