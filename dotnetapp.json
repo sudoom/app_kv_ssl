@@ -82,8 +82,6 @@
         "secretValue": {
             "type": "securestring"
         }
-
-
     },
     "variables": {
         "alwaysOn": false,
@@ -239,7 +237,6 @@
                 }
             ]
         }
-
     ],
     "outputs": {
         "principalid": {

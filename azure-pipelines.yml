@@ -1,5 +1,6 @@
 trigger:
 - '*'
+
 variables:
   buildConfiguration: 'Release'
 
@@ -11,8 +12,6 @@ stages:
       displayName: 'Build job'
       pool:
         vmImage: 'ubuntu-18.04'
-        demands:
-        - npm
 
       variables:
         wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
@@ -38,21 +37,6 @@ stages:
           inputs:
             packageType: sdk
             version: '$(dotnetSdkVersion)'
-        
-        - task: Npm@1
-          displayName: 'Run npm install'
-          inputs:
-            verbose: false
-        
-        - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
-          displayName: 'Compile Sass assets'
-
-        - task: gulp@1
-          displayName: 'Run gulp tasks'
-        
-        - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
-          displayName: 'Write build info'
-          workingDirectory: $(wwwrootDir)
 
         - task: DotNetCoreCLI@2
           displayName: 'Restore project dependencies'
@@ -60,33 +44,22 @@ stages:
             command: 'restore'
             projects: '**/*.csproj'
 
-        - template: templates/build.yml
-          parameters:
-            buildConfiguration: 'Release'    
+        - task: DotNetCoreCLI@2
+          displayName: 'Build the project - ${{ parameters.buildConfiguration }}'
+          inputs:
+            command: 'build'
+            arguments: '--no-restore --configuration ${{ parameters.buildConfiguration }}'
+            projects: '**/*.csproj'
+      
+        - task: DotNetCoreCLI@2
+          displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
+          inputs:
+            command: 'publish'
+            projects: '**/*.csproj'
+            publishWebProjects: false
+            arguments: '--no-build --configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}'
+            zipAfterPublish: true   
 
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Artifact: drop'
           condition: succeeded()
-
-  - stage: 'Deploy'
-    displayName: 'Deploy the web application'
-    dependsOn: Build
-    jobs:
-      - deployment: Deploy
-        pool:
-          vmImage: 'ubuntu-18.04'
-        environment: dev
-        variables:
-          - group: Release
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - download: current
-                  artifact: drop
-                - task: AzureWebApp@1
-                  displayName: 'Azure app service Deeploy: website'
-                  inputs:
-                    azureSubscription: 'mossad-connection'
-                    appName: '$(WebAppName)'
-                    package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
