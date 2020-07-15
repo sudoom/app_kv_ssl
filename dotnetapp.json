@@ -74,12 +74,30 @@
                 "all"
             ]
         },
-        "skuName": {
+        "skuNameKV": {
             "type": "string",
             "defaultValue": "Standard",
             "allowedValues": [
                 "Standard",
                 "Premium"
+            ]
+        },
+        "skuAppTier": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Free",
+                "Basic",
+                "Shared"
+            ]
+        },
+        "skuAppName": {
+            "type": "string",
+            "defaultValue": "B1",
+            "allowedValues": [
+                "F1",
+                "B1",
+                "D1"
             ]
         },
         "secretName": {
@@ -91,8 +109,6 @@
     },
     "variables": {
         "alwaysOn": false,
-        "sku": "Free",
-        "skuCode": "F1",
         "workerSize": "0",
         "workerSizeId": 0,
         "numberOfWorkers": "1",
@@ -178,8 +194,8 @@
                 "numberOfWorkers": "[variables('numberOfWorkers')]"
             },
             "sku": {
-                "Tier": "[variables('sku')]",
-                "Name": "[variables('skuCode')]"
+                "Tier": "[parameters('skuAppTier')]",
+                "Name": "[parameters('skuAppName')]"
             }
         },
         {
@@ -191,7 +207,6 @@
                 "ApplicationId": "[parameters('webAppName')]"
             }
         },
-
         {
             "name": "[parameters('KeyVaultName')]",
             "type": "Microsoft.KeyVault/vaults",
@@ -227,7 +242,7 @@
                     }
                 ],
                 "sku": {
-                    "name": "[parameters('skuName')]",
+                    "name": "[parameters('skuNameKV')]",
                     "family": "A"
                 }
             },
