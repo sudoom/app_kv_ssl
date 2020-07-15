@@ -259,18 +259,19 @@
                     }
                 }
             ]
-        },
-        {
-            "name": "[concat(parameters('KeyVaultName'), '/supercert')]",
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "apiVersion": "2016-10-01",
-            "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]"
-            ],
-            "properties": {
-                "contentType": "application/x-pkcs12"
-            }
         }
+        // ,
+        // {
+        //     "name": "[concat(parameters('KeyVaultName'), '/supercert')]",
+        //     "type": "Microsoft.KeyVault/vaults/secrets",
+        //     "apiVersion": "2016-10-01",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]"
+        //     ],
+        //     "properties": {
+        //         "contentType": "application/x-pkcs12"
+        //     }
+        // }
     ],
     "outputs": {
         "Normal": {
