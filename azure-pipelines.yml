@@ -61,13 +61,23 @@ stages:
           displayName: 'Publish Artifact: drop'
           condition: succeeded()
 
-        - task: AzureCLI@2
-          displayName: 'Azure CLI '
+        # - task: AzureCLI@2
+        #   displayName: 'Azure CLI '
+        #   inputs:
+        #     azureSubscription: 'mossad-connection'
+        #     scriptType: bash
+        #     scriptLocation: inlineScript
+        #     inlineScript: |
+        #       az keyvault certificate create --vault-name tailspinkeyvaults -n cert1 \
+        #         -p "$(az keyvault certificate get-default-policy)"
+
+        - task: AzurePowerShell@5
+          displayName: 'Azure PowerShell script: InlineScript'
           inputs:
             azureSubscription: 'mossad-connection'
-            scriptType: bash
-            scriptLocation: inlineScript
-            inlineScript: |
-              az keyvault certificate create --vault-name tailspinkeyvaults -n cert1 \
-                -p "$(az keyvault certificate get-default-policy)"
-        
+            ScriptType: InlineScript
+            Inline: |
+              $Policy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -SubjectName "CN=contoso.com" -IssuerName "Self" -ValidityInMonths 6 -ReuseKeyOnRenewal
+              Add-AzKeyVaultCertificate -VaultName "tailspinkeyvaults" -Name "ExampleCertificate" -CertificatePolicy $Policy
+            azurePowerShellVersion: LatestVersion
+                
