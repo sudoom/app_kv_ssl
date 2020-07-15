@@ -68,6 +68,12 @@
                 "all"
             ]
         },
+        "certificatesPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "all"
+            ]
+        },
         "skuName": {
             "type": "string",
             "defaultValue": "Standard",
@@ -206,7 +212,8 @@
                         "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01', 'Full').identity.principalId]",
                         "permissions": {
                             "keys": "[parameters('keysPermissions')]",
-                            "secrets": "[parameters('secretsPermissions')]"
+                            "secrets": "[parameters('secretsPermissions')]",
+                            "certificates": "[parameters('certificatesPermissions')]"
                         }
                     },
                     {
@@ -214,7 +221,8 @@
                         "objectId": "f873cf76-4906-49cc-95ab-dd61a616bb08",
                         "permissions": {
                             "keys": "[parameters('keysPermissions')]",
-                            "secrets": "[parameters('secretsPermissions')]"
+                            "secrets": "[parameters('secretsPermissions')]",
+                            "certificates": "[parameters('certificatesPermissions')]"
                         }
                     }
                 ],
