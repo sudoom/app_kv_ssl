@@ -273,9 +273,13 @@
         }
     ],
     "outputs": {
-        "principalid": {
+        "Normal": {
             "type": "object",
-            "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets',parameters('KeyVaultName')),'2016-10-01', 'Full')]"
+            "value": "[reference(parameters('KeyVaultName'))]"
+        },
+        "Full": {
+            "type": "object",
+            "value": "[reference(parameters('KeyVaultName'), '2019-09-01', 'Full')]"
         }
     }
 }
