@@ -60,3 +60,14 @@ stages:
         - task: PublishBuildArtifacts@1
           displayName: 'Publish Artifact: drop'
           condition: succeeded()
+
+        - task: AzureCLI@2
+          displayName: 'Azure CLI '
+          inputs:
+            azureSubscription: 'mossad-connection'
+            scriptType: bash
+            scriptLocation: inlineScript
+            inlineScript: |
+              az keyvault certificate create --vault-name tailspinkeyvaults -n cert1 \
+                -p "$(az keyvault certificate get-default-policy)"
+        
