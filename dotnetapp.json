@@ -259,12 +259,23 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "[concat(parameters('KeyVaultName'), '/supercert')]",
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2016-10-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]"
+            ],
+            "properties": {
+                "contentType": "application/x-pkcs12"
+            }
         }
     ],
     "outputs": {
         "principalid": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01', 'Full').identity.principalId]"
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets',parameters('KeyVaultName')),'2016-10-01', 'Full')]"
         }
     }
 }
