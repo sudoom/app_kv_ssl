@@ -79,6 +79,6 @@ stages:
             Inline: |
               # $Policy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -SubjectName "CN=ppl" -IssuerName "Self" -ValidityInMonths 6 -ReuseKeyOnRenewal
               # Add-AzKeyVaultCertificate -VaultName "tailspinkeyvaults" -Name "ExampleCertificate" -CertificatePolicy $Policy
-              Set-AzureKeyVaultCertificatePolicy -VaultName tailspinkeyvaults -Name cert1 -RenewAtNumberOfDaysBeforeExpiry 14
+              Set-AzKeyVaultCertificatePolicy -VaultName "tailspinkeyvaults" -Name "cert1" -RenewAtNumberOfDaysBeforeExpiry 14
             azurePowerShellVersion: LatestVersion
                 
