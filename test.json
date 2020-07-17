@@ -23,12 +23,8 @@
                         "tenantId": "[subscription().tenantId]",
                         "objectId": "e6391adb-e7da-46b4-84a6-4a9e680dd58f",
                         "permissions": {
-                            "keys": [
-                                "all"
-                            ],
-                            "secrets": [
-                                "all"
-                            ],
+                            "keys": [ "all" ],
+                            "secrets": [ "all" ],
                             "certificates": [ "all" ]
                         }
                     }
