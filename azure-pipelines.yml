@@ -71,14 +71,18 @@ stages:
         #       az keyvault certificate create --vault-name tailspinkeyvaults -n cert1 \
         #         -p "$(az keyvault certificate get-default-policy)"
 
-        - task: AzurePowerShell@5
-          displayName: 'Azure PowerShell script: InlineScript'
+        # - task: AzurePowerShell@5
+        #   displayName: 'Azure PowerShell script: InlineScript'
+        #   inputs:
+        #     azureSubscription: 'test-connection'
+        #     ScriptType: InlineScript
+        #     Inline: |
+        #       $Policy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -SubjectName "CN=ppl" -IssuerName "Self" -ValidityInMonths 6 -ReuseKeyOnRenewal
+        #       Add-AzKeyVaultCertificate -VaultName "tailspinkeyvaults" -Name "cert1" -CertificatePolicy $Policy
+        #       Set-AzKeyVaultCertificatePolicy -VaultName "tailspinkeyvaults" -Name "cert1" -RenewAtNumberOfDaysBeforeExpiry 14
+        #     azurePowerShellVersion: LatestVersion
+        
+        - task: PowerShell@2
           inputs:
-            azureSubscription: 'test-connection'
-            ScriptType: InlineScript
-            Inline: |
-              $Policy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -SubjectName "CN=ppl" -IssuerName "Self" -ValidityInMonths 6 -ReuseKeyOnRenewal
-              Add-AzKeyVaultCertificate -VaultName "tailspinkeyvaults" -Name "cert1" -CertificatePolicy $Policy
-              Set-AzKeyVaultCertificatePolicy -VaultName "tailspinkeyvaults" -Name "cert1" -RenewAtNumberOfDaysBeforeExpiry 14
-            azurePowerShellVersion: LatestVersion
-                
+            targetType: 'inline'
+            script: 'Login-AzAccount'
