@@ -105,6 +105,22 @@
         },
         "secretValue": {
             "type": "securestring"
+        },
+        "wafPolicyName": {
+            "type": "string",
+            "defaultValue": "testmossadwafpolicy"
+        },
+        "wafMode": {
+            "type": "string",
+            "allowedValues": [
+                "Detection",
+                "Prevention"
+            ],
+            "defaultValue": "Detection"
+        },
+        "frontdoorName": {
+            "type": "string",
+            "defaultValue": "testmossad"
         }
     },
     "variables": {
@@ -114,7 +130,8 @@
         "numberOfWorkers": "1",
         "currentStack": "dotnetcore",
         "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
-        "appInsight": "[concat('insights-', parameters('webAppName'))]"
+        "appInsight": "[concat('insights-', parameters('webAppName'))]",
+        "wafLocation": "global"
     },
     "resources": [
         {
@@ -259,28 +276,131 @@
                     }
                 }
             ]
-        }
-        // ,
-        // {
-        //     "name": "[concat(parameters('KeyVaultName'), '/supercert')]",
-        //     "type": "Microsoft.KeyVault/vaults/secrets",
-        //     "apiVersion": "2016-10-01",
-        //     "dependsOn": [
-        //         "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]"
-        //     ],
-        //     "properties": {
-        //         "contentType": "application/x-pkcs12"
-        //     }
-        // }
-    ],
-    "outputs": {
-        "Normal": {
-            "type": "object",
-            "value": "[reference(parameters('KeyVaultName'))]"
         },
-        "Full": {
-            "type": "object",
-            "value": "[reference(parameters('KeyVaultName'), '2019-09-01', 'Full')]"
+        {
+            "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
+            "apiVersion": "2019-03-01",
+            "name": "[parameters('wafPolicyName')]",
+            "location": "[variables('wafLocation')]",
+            "properties": {
+                "policySettings": {
+                    "mode": "[parameters('wafMode')]",
+                    "enabledState": "Enabled"
+                },
+                "managedRules": {
+                    "managedRuleSets": [
+                        {
+                            "ruleSetType": "DefaultRuleSet",
+                            "ruleSetVersion": "1.0"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/frontDoors",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('frontdoorName')]",
+            "location": "[variables('wafLocation')]",
+            "properties": {
+                "backendPools": [
+                    {
+                        "name": "backPool",
+                        "properties": {
+                            "backends": [
+                                {
+                                    "address": "[concat(parameters('webAppName'),'.azurewebsites.net')]",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[concat(parameters('webAppName'),'.azurewebsites.net')]",
+                                    "enabledState": "Enabled"
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[resourceId('Microsoft.Network/frontDoors/healthProbeSettings', parameters('frontDoorName'), 'hbset1')]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[resourceId('Microsoft.Network/frontDoors/loadBalancingSettings', parameters('frontDoorName'), 'lbset1')]"
+                            }
+                        }
+                    }
+                ],
+                "frontendEndpoints": [
+                    {
+                        "name": "frontep1",
+                        "properties": {
+                            "hostName": "[concat(parameters('frontdoorName'), '.azurefd.net')]",
+                            "sessionAffinityEnabledState": "Disabled",
+                            "webApplicationFirewallPolicyLink": {
+                                "id": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies',parameters('wafPolicyName'))]"
+                            }
+                        }
+                    }
+                ],
+                "healthProbeSettings": [
+                    {
+                        "name": "hbset1",
+                        "properties": {
+                            "path": "/",
+                            "intervalInSeconds": 30,
+                            "protocol": "Https",
+                            "healthProbeMethod": "GET"
+                        }
+                    }
+                ],
+                "loadBalancingSettings": [
+                    {
+                        "name": "lbset1",
+                        "properties": {
+                            "sampleSize": 4,
+                            "successfulSamplesRequired": 2
+                        }
+                    }
+                ],
+                "routingRules": [
+                    {
+                        "name": "httptohttps",
+                        "properties": {
+                            "frontendEndpoints": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints',parameters('frontdoorName'), 'frontep1')]"
+                                }
+                            ],
+                            "acceptedProtocols": [
+                                "Http"
+                            ],
+                            "patternsToMatch": [
+                                "/*"
+                            ],
+                            "routeConfiguration": {
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorRedirectConfiguration",
+                                "redirectProtocol": "HttpsOnly",
+                                "redirectType": "Found",
+                                "backendPool": {
+                                    "id": "[resourceId('Microsoft.Network/frontDoors/backendPools', parameters('frontdoorName'), 'backPool')]"
+                                }
+                            },
+                            "enabledState": "Enabled"
+                        }
+                    }
+                ],
+                "enabledState": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "mossadbindingfrontdoor",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites',parameters('webAppName'))]"
+            ],
+            "properties": {
+                "siteName": "[parameters('webAppName')]",
+                "hostNameType": "Verified"
+            }
         }
-    }
+    ]
 }
