@@ -378,10 +378,7 @@
                             "routeConfiguration": {
                                 "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorRedirectConfiguration",
                                 "redirectProtocol": "HttpsOnly",
-                                "redirectType": "Found",
-                                "backendPool": {
-                                    "id": "[resourceId('Microsoft.Network/frontDoors/backendPools', parameters('frontdoorName'), 'backPool')]"
-                                }
+                                "redirectType": "Found"
                             },
                             "enabledState": "Enabled"
                         }
