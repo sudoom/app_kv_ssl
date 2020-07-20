@@ -34,13 +34,14 @@
         //         "description": "Existing App name to use for verification and assignment. This App should have the domain assigned as a custom domain"
         //     }
         // }
-        // ,
-        // "rootHostname": {
-        //     "type": "string",
-        //     "metadata": {
-        //         "description": "Hostname for App Service Certificate. The root and www subdomain should be assigned to the Web App as custom domains"
-        //     }
-        // }
+        ,
+        "rootHostname": {
+            "type": "string",
+            "defaultValue": "mossadopalooza",
+            "metadata": {
+                "description": "Hostname for App Service Certificate. The root and www subdomain should be assigned to the Web App as custom domains"
+            }
+        }
         // ,
         // "existingAppLocation": {
         //     "type": "string",
@@ -56,10 +57,11 @@
         //     }
         // }
     },
-    // "variables": {
-    //     "distinguishedName": "[concat('CN=', parameters('rootHostname'))]",
-    //     "wwwHostname": "[concat('www.', parameters('rootHostname'))]"
-    // },
+    "variables": {
+        "distinguishedName": "[concat('CN=', parameters('rootHostname'))]"
+        // ,
+        // "wwwHostname": "[concat('www.', parameters('rootHostname'))]"
+    },
     "resources": [
         {
             "type": "Microsoft.CertificateRegistration/certificateOrders",
@@ -67,7 +69,7 @@
             "apiVersion": "2015-08-01",
             "location": "global",
             "properties": {
-                "DistinguishedName": "CN=mossadopalooza",
+                "DistinguishedName": "[variables('distinguishedName')]",
                 "ValidityInYears": 1,
                 "ProductType": "[parameters('productType')]",
                 "autoRenew": false
