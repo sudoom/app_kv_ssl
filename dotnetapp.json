@@ -129,6 +129,7 @@
         "workerSizeId": 0,
         "numberOfWorkers": "1",
         "currentStack": "dotnetcore",
+        "hostnamebind": "[concat(parameters('webAppName'), '/', parameters('webAppName'), '.azurewebsites.net')]",
         "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
         "appInsight": "[concat('insights-', parameters('webAppName'))]",
         "wafLocation": "global"
@@ -392,7 +393,7 @@
         {
             "type": "Microsoft.Web/sites/hostNameBindings",
             "apiVersion": "2018-11-01",
-            "name": "mossadbindingfrontdoor",
+            "name": "[variables('hostnamebind')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites',parameters('webAppName'))]"
