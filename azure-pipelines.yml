@@ -8,7 +8,7 @@ stages:
     - job: 'Build'
       displayName: 'Build job'
       pool:
-        vmImage: 'windows-2019'
+        vmImage: 'ubuntu-18.04'
 
       variables:
         wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
@@ -20,9 +20,9 @@ stages:
           inputs:
             deploymentScope: 'Resource Group'
             azureResourceManagerConnection: 'mossad-connection'
-            subscriptionId: '31913d88-00fe-439b-9bab-a0fc309af11f'
+            subscriptionId: 'b986656e-c238-4d08-bc76-efbfc9a46470'
             action: 'Create Or Update Resource Group'
-            resourceGroupName: 'testpipe'
+            resourceGroupName: 'test'
             location: 'East US'
             templateLocation: 'Linked artifact'
             csmFile: 'dotnetapp.json'
@@ -61,24 +61,14 @@ stages:
           displayName: 'Publish Artifact: drop'
           condition: succeeded()
 
-        # - task: AzureCLI@2
-        #   displayName: 'Azure CLI '
+        # - task: AzurePowerShell@5
+        #   displayName: 'Azure PowerShell script: InlineScript'
         #   inputs:
         #     azureSubscription: 'mossad-connection'
-        #     scriptType: bash
-        #     scriptLocation: inlineScript
-        #     inlineScript: |
-        #       az keyvault certificate create --vault-name tailspinkeyvaults -n cert1 \
-        #         -p "$(az keyvault certificate get-default-policy)"
-
-        - task: AzurePowerShell@5
-          displayName: 'Azure PowerShell script: InlineScript'
-          inputs:
-            azureSubscription: 'mossad-connection'
-            ScriptType: InlineScript
-            Inline: |
-              # $Policy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -SubjectName "CN=ppl" -IssuerName "Self" -ValidityInMonths 6 -ReuseKeyOnRenewal
-              # Add-AzKeyVaultCertificate -VaultName "tailspinkeyvaults" -Name "ExampleCertificate" -CertificatePolicy $Policy
-              Set-AzKeyVaultCertificatePolicy -VaultName "tailspinkeyvaults" -Name "cert1" -RenewAtNumberOfDaysBeforeExpiry 14
-            azurePowerShellVersion: LatestVersion
+        #     ScriptType: InlineScript
+        #     Inline: |
+        #       # $Policy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -SubjectName "CN=ppl" -IssuerName "Self" -ValidityInMonths 6 -ReuseKeyOnRenewal
+        #       # Add-AzKeyVaultCertificate -VaultName "tailspinkeyvaults" -Name "ExampleCertificate" -CertificatePolicy $Policy
+        #       Set-AzKeyVaultCertificatePolicy -VaultName "tailspinkeyvaults" -Name "cert1" -RenewAtNumberOfDaysBeforeExpiry 14
+        #     azurePowerShellVersion: LatestVersion
                 
