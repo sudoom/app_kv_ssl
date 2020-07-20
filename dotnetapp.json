@@ -37,7 +37,7 @@
         ,
         "rootHostname": {
             "type": "string",
-            "defaultValue": "mossadopalooza",
+            "defaultValue": "mossadtest.com",
             "metadata": {
                 "description": "Hostname for App Service Certificate. The root and www subdomain should be assigned to the Web App as custom domains"
             }
