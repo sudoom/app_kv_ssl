@@ -15,19 +15,19 @@ stages:
       #   dotnetSdkVersion: '3.1.300'
 
       steps:
-        # - task: AzureResourceManagerTemplateDeployment@3
-        #   displayName: 'Create .Net Core App'
-        #   inputs:
-        #     deploymentScope: 'Resource Group'
-        #     azureResourceManagerConnection: 'test-connection'
-        #     subscriptionId: 'b986656e-c238-4d08-bc76-efbfc9a46470'
-        #     action: 'Create Or Update Resource Group'
-        #     resourceGroupName: 'test'
-        #     location: 'East US'
-        #     templateLocation: 'Linked artifact'
-        #     csmFile: 'test.json'
-        #     # overrideParameters: '-secretName $(secretName) -secretValue $(secretValue)'
-        #     deploymentMode: 'Incremental'
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: 'Create .Net Core App'
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: 'test-connection'
+            subscriptionId: 'b986656e-c238-4d08-bc76-efbfc9a46470'
+            action: 'Create Or Update Resource Group'
+            resourceGroupName: 'test'
+            location: 'East US'
+            templateLocation: 'Linked artifact'
+            csmFile: 'dotnetapp.json'
+            # overrideParameters: '-secretName $(secretName) -secretValue $(secretValue)'
+            deploymentMode: 'Incremental'
 
         # - task: UseDotNet@2
         #   displayName: 'Use .Net Core SDK $(dotnetSdkVersion)'
