@@ -378,7 +378,7 @@
                             "routeConfiguration": {
                                 "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorRedirectConfiguration",
                                 "redirectProtocol": "HttpsOnly",
-                                "redirectType": "Found"
+                                "redirectType": "Moved"
                             },
                             "enabledState": "Enabled"
                         }
