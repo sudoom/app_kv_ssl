@@ -2,414 +2,101 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "webAppName": {
+        "certificateOrderName": {
             "type": "string",
-            "defaultValue": "tailspinmossad",
+            "defaultValue": "cert1",
             "metadata": {
-                "description": "That name is the name of our application. It has to be unique. Type a name followed by your resource group name. (<name>-<resourceGroupName>)"
+                "description": "Name of the App Service Certificate"
             }
         },
-        "location": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "Location for all resources."
-            }
-        },
-        "KeyVaultName": {
-            "type": "string",
-            "defaultValue": "tailspinkeyvaults"
-        },
-        "enabledForDeployment": {
-            "type": "bool",
-            "defaultValue": false,
-            "allowedValues": [
-                false,
-                true
-            ]
-        },
-        "enabledForTemplateDeployment": {
-            "type": "bool",
-            "defaultValue": false,
-            "allowedValues": [
-                false,
-                true
-            ]
-        },
-        "enabledForDiskEncryption": {
-            "type": "bool",
-            "defaultValue": false,
-            "allowedValues": [
-                false,
-                true
-            ]
-        },
-        "enableSoftDelete": {
-            "type": "bool",
-            "defaultValue": false,
-            "allowedValues": [
-                false,
-                true
-            ]
-        },
-        "tenantId": {
-            "type": "string",
-            "defaultValue": "[subscription().tenantId]"
-        },
-        "keysPermissions": {
-            "type": "array",
-            "defaultValue": [
-                "all"
-            ]
-        },
-        "secretsPermissions": {
-            "type": "array",
-            "defaultValue": [
-                "all"
-            ]
-        },
-        "certificatesPermissions": {
-            "type": "array",
-            "defaultValue": [
-                "all"
-            ]
-        },
-        "skuNameKV": {
-            "type": "string",
-            "defaultValue": "Standard",
-            "allowedValues": [
-                "Standard",
-                "Premium"
-            ]
-        },
-        "skuAppTier": {
-            "type": "string",
-            "defaultValue": "Basic",
-            "allowedValues": [
-                "Free",
-                "Basic",
-                "Shared"
-            ]
-        },
-        "skuAppName": {
-            "type": "string",
-            "defaultValue": "B1",
-            "allowedValues": [
-                "F1",
-                "B1",
-                "D1"
-            ]
-        },
-        "secretName": {
-            "type": "string"
-        },
-        "secretValue": {
-            "type": "securestring"
-        },
-        "wafPolicyName": {
-            "type": "string",
-            "defaultValue": "testmossadwafpolicy"
-        },
-        "wafMode": {
+        "productType": {
             "type": "string",
             "allowedValues": [
-                "Detection",
-                "Prevention"
+                "StandardDomainValidatedSsl",
+                "StandardDomainValidatedWildCardSsl"
             ],
-            "defaultValue": "Detection"
+            "defaultValue": "StandardDomainValidatedSsl",
+            "metadata": {
+                "description": "App Service Certificate type"
+            }
         },
-        "frontdoorName": {
+        "existingKeyVaultId": {
             "type": "string",
-            "defaultValue": "testmossad"
+            "defaultValue": "/subscriptions/b986656e-c238-4d08-bc76-efbfc9a46470/resourceGroups/test/providers/Microsoft.KeyVault/vaults/tailspinkeyvaults",
+            "metadata": {
+                "description": "Existing Key Vault resource Id that already has access policies to allow Microsoft.CertificateRegistration and Microsoft.Web RPs to perform required operations on secret (Checkout README.md for more information)"
+            }
         }
+        // ,
+        // "existingAppName": {
+        //     "type": "string",
+        //     "metadata": {
+        //         "description": "Existing App name to use for verification and assignment. This App should have the domain assigned as a custom domain"
+        //     }
+        // }
+        ,
+        "rootHostname": {
+            "type": "string",
+
+        }
+        // ,
+        // "existingAppLocation": {
+        //     "type": "string",
+        //     "metadata": {
+        //         "description": "App location"
+        //     }
+        // },
+        // "location": {
+        //     "type": "string",
+        //     "defaultValue": "[resourceGroup().location]",
+        //     "metadata": {
+        //         "description": "Location for all resources."
+        //     }
+        // }
     },
     "variables": {
-        "alwaysOn": false,
-        "workerSize": "0",
-        "workerSizeId": 0,
-        "numberOfWorkers": "1",
-        "currentStack": "dotnetcore",
-        "hostnamebind": "[concat(parameters('webAppName'), '/', parameters('webAppName'), '.azurewebsites.net')]",
-        "hostingPlanName": "[concat('hpn-', resourceGroup().name)]",
-        "appInsight": "[concat('insights-', parameters('webAppName'))]",
-        "wafLocation": "global"
+
     },
     "resources": [
         {
-            "apiVersion": "2018-02-01",
-            "name": "[parameters('webAppName')]",
-            "type": "Microsoft.Web/sites",
-            "location": "[parameters('location')]",
-            "identity": {
-                "type": "SystemAssigned"
-            },
+            "type": "Microsoft.CertificateRegistration/certificateOrders",
+            "name": "[parameters('certificateOrderName')]",
+            "apiVersion": "2015-08-01",
+            "location": "global",
+            "properties": {
+                "DistinguishedName": "[variables('distinguishedName')]",
+                "ValidityInYears": 1,
+                "ProductType": "[parameters('productType')]",
+                "autoRenew": false
+            }
+        },
+        // {
+        //     "type": "Microsoft.Web/sites/domainOwnershipIdentifiers",
+        //     "name": "[concat(parameters('existingAppName'), concat('/', parameters('certificateOrderName')))]",
+        //     "apiVersion": "2016-08-01",
+        //     "location": "[parameters('existingAppLocation')]",
+        //     "dependsOn": [
+        //         "[resourceId('Microsoft.CertificateRegistration/certificateOrders', parameters('certificateOrderName'))]"
+        //     ],
+        //     "properties": {
+        //         "id": "[reference(resourceId('Microsoft.CertificateRegistration/certificateOrders', parameters('certificateOrderName'))).DomainVerificationToken]"
+        //     }
+        // },
+        {
+            "type": "Microsoft.CertificateRegistration/certificateOrders/certificates",
+            "name": "[concat(parameters('certificateOrderName'), concat('/', parameters('certificateOrderName')))]",
+            "apiVersion": "2015-08-01",
+            "location": "global",
             "dependsOn": [
-                "[resourceId('Microsoft.Insights/components/', variables('appInsight'))]",
-                "[resourceId('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+                "[resourceId('Microsoft.CertificateRegistration/certificateOrders', parameters('certificateOrderName'))]"
+                // ,
+                // "[resourceId('Microsoft.Web/sites/domainOwnershipIdentifiers', parameters('existingAppName'), parameters('certificateOrderName'))]"
             ],
             "properties": {
-                "name": "[parameters('webAppName')]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsight')), '2018-05-01-preview').InstrumentationKey]"
-                        },
-                        {
-                            "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
-                            "value": "~2"
-                        },
-                        {
-                            "name": "XDT_MicrosoftApplicationInsights_Mode",
-                            "value": "default"
-                        },
-                        {
-                            "name": "DiagnosticServices_EXTENSION_VERSION",
-                            "value": "disabled"
-                        },
-                        {
-                            "name": "APPINSIGHTS_PROFILERFEATURE_VERSION",
-                            "value": "disabled"
-                        },
-                        {
-                            "name": "APPINSIGHTS_SNAPSHOTFEATURE_VERSION",
-                            "value": "disabled"
-                        },
-                        {
-                            "name": "InstrumentationEngine_EXTENSION_VERSION",
-                            "value": "disabled"
-                        },
-                        {
-                            "name": "SnapshotDebugger_EXTENSION_VERSION",
-                            "value": "disabled"
-                        },
-                        {
-                            "name": "XDT_MicrosoftApplicationInsights_BaseExtensions",
-                            "value": "disabled"
-                        }
-                    ],
-                    "metadata": [
-                        {
-                            "name": "CURRENT_STACK",
-                            "value": "[variables('currentStack')]"
-                        }
-                    ],
-                    "alwaysOn": "[variables('alwaysOn')]"
-                },
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "clientAffinityEnabled": true
+                "keyVaultId": "[parameters('existingKeyVaultId')]",
+                "keyVaultSecretName": "[parameters('certificateOrderName')]"
             }
-        },
-        {
-            "apiVersion": "2018-02-01",
-            "name": "[variables('hostingPlanName')]",
-            "type": "Microsoft.Web/serverfarms",
-            "location": "[parameters('location')]",
-            "properties": {
-                "name": "[variables('hostingPlanName')]",
-                "workerSize": "[variables('workerSize')]",
-                "workerSizeId": "[variables('workerSizeId')]",
-                "numberOfWorkers": "[variables('numberOfWorkers')]"
-            },
-            "sku": {
-                "Tier": "[parameters('skuAppTier')]",
-                "Name": "[parameters('skuAppName')]"
-            }
-        },
-        {
-            "apiVersion": "2018-05-01-preview",
-            "name": "[variables('appInsight')]",
-            "type": "microsoft.insights/components",
-            "location": "[parameters('location')]",
-            "properties": {
-                "ApplicationId": "[parameters('webAppName')]"
-            }
-        },
-        {
-            "name": "[parameters('KeyVaultName')]",
-            "type": "Microsoft.KeyVault/vaults",
-            "apiVersion": "2019-09-01",
-            "location": "[parameters('location')]",
-            "tags": {
-                "displayName": "[parameters('KeyVaultName')]"
-            },
-            "properties": {
-                "enabledForDeployment": "[parameters('enabledForDeployment')]",
-                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
-                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
-                "enableSoftDelete": "[parameters('enableSoftDelete')]",
-                "tenantId": "[parameters('tenantId')]",
-                "accessPolicies": [
-                    {
-                        "tenantId": "[parameters('tenantId')]",
-                        "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01', 'Full').identity.principalId]",
-                        "permissions": {
-                            "keys": "[parameters('keysPermissions')]",
-                            "secrets": "[parameters('secretsPermissions')]",
-                            "certificates": "[parameters('certificatesPermissions')]"
-                        }
-                    },
-                    {
-                        "tenantId": "[parameters('tenantId')]",
-                        "objectId": "e6391adb-e7da-46b4-84a6-4a9e680dd58f",
-                        "permissions": {
-                            "keys": "[parameters('keysPermissions')]",
-                            "secrets": "[parameters('secretsPermissions')]",
-                            "certificates": "[parameters('certificatesPermissions')]"
-                        }
-                    }
-                ],
-                "sku": {
-                    "name": "[parameters('skuNameKV')]",
-                    "family": "A"
-                }
-            },
-            "resources": [
-                {
-                    "type": "secrets",
-                    "name": "[concat(parameters('KeyVaultName'), '-', parameters('secretName'))]",
-                    "apiVersion": "2019-09-01",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.KeyVault/vaults', parameters('KeyVaultName'))]"
-                    ],
-                    "properties": {
-                        "value": "[parameters('secretValue')]"
-                    }
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
-            "apiVersion": "2019-03-01",
-            "name": "[parameters('wafPolicyName')]",
-            "location": "[variables('wafLocation')]",
-            "properties": {
-                "policySettings": {
-                    "mode": "[parameters('wafMode')]",
-                    "enabledState": "Enabled"
-                },
-                "managedRules": {
-                    "managedRuleSets": [
-                        {
-                            "ruleSetType": "DefaultRuleSet",
-                            "ruleSetVersion": "1.0"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Network/frontDoors",
-            "apiVersion": "2020-05-01",
-            "name": "[parameters('frontdoorName')]",
-            "location": "[variables('wafLocation')]",
-            "properties": {
-                "backendPools": [
-                    {
-                        "name": "backPool",
-                        "properties": {
-                            "backends": [
-                                {
-                                    "address": "[concat(parameters('webAppName'),'.azurewebsites.net')]",
-                                    "httpPort": 80,
-                                    "httpsPort": 443,
-                                    "priority": 1,
-                                    "weight": 50,
-                                    "backendHostHeader": "[concat(parameters('webAppName'),'.azurewebsites.net')]",
-                                    "enabledState": "Enabled"
-                                }
-                            ],
-                            "healthProbeSettings": {
-                                "id": "[resourceId('Microsoft.Network/frontDoors/healthProbeSettings', parameters('frontDoorName'), 'hbset1')]"
-                            },
-                            "loadBalancingSettings": {
-                                "id": "[resourceId('Microsoft.Network/frontDoors/loadBalancingSettings', parameters('frontDoorName'), 'lbset1')]"
-                            }
-                        }
-                    }
-                ],
-                "frontendEndpoints": [
-                    {
-                        "name": "frontep1",
-                        "properties": {
-                            "hostName": "[concat(parameters('frontdoorName'), '.azurefd.net')]",
-                            "sessionAffinityEnabledState": "Disabled",
-                            "webApplicationFirewallPolicyLink": {
-                                "id": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies',parameters('wafPolicyName'))]"
-                            }
-                        }
-                    }
-                ],
-                "healthProbeSettings": [
-                    {
-                        "name": "hbset1",
-                        "properties": {
-                            "path": "/",
-                            "intervalInSeconds": 30,
-                            "protocol": "Https",
-                            "healthProbeMethod": "GET"
-                        }
-                    }
-                ],
-                "loadBalancingSettings": [
-                    {
-                        "name": "lbset1",
-                        "properties": {
-                            "sampleSize": 4,
-                            "successfulSamplesRequired": 2
-                        }
-                    }
-                ],
-                "routingRules": [
-                    {
-                        "name": "httptohttps",
-                        "properties": {
-                            "frontendEndpoints": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints',parameters('frontdoorName'), 'frontep1')]"
-                                }
-                            ],
-                            "acceptedProtocols": [
-                                "Http"
-                            ],
-                            "patternsToMatch": [
-                                "/*"
-                            ],
-                            "routeConfiguration": {
-                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorRedirectConfiguration",
-                                "redirectProtocol": "HttpsOnly",
-                                "redirectType": "Moved"
-                            },
-                            "enabledState": "Enabled"
-                        }
-                    },
-                    {
-                        "name": "defaultForwardingRoute",
-                        "properties": {
-                            "frontendEndpoints": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints',parameters('frontdoorName'), 'frontep1')]"
-                                }
-                            ],
-                            "acceptedProtocols": [
-                                "Https"
-                            ],
-                            "patternsToMatch": [
-                                "/*"
-                            ],
-                            "enabledState": "Enabled",
-                            "routeConfiguration": {
-                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
-                                "forwardingProtocol": "HttpsOnly",
-                                "backendPool": {
-                                    "id": "[resourceId('Microsoft.Network/frontDoors/backendPools', parameters('frontdoorName'), 'backPool')]"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "enabledState": "Enabled"
-            }
+
         },
         {
             "type": "Microsoft.Web/sites/hostNameBindings",
@@ -425,4 +112,4 @@
             }
         }
     ]
-}
+
